@@ -3,291 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gelişmiş SVG Editörü | Renk & Boyut</title>
+    <title>SVG Editör | Pro Tablet</title>
     <style>
-        :root { --accent: #10b981; --bg: #0f172a; --panel: #1e293b; --input-bg: #0f172a; --border: #334155; }
-        body { margin: 0; font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: white; height: 100vh; display: flex; overflow: hidden; }
+        :root { --accent: #10b981; --bg: #0f172a; --panel: #1e293b; --border: #334155; }
+        
+        body { 
+            margin: 0; font-family: -apple-system, system-ui, sans-serif; 
+            background: var(--bg); color: white; height: 100vh; 
+            display: flex; flex-direction: column; overflow: hidden; 
+        }
 
         /* Login Ekranı */
-        #login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .login-card { background: var(--panel); padding: 40px; border-radius: 16px; width: 90%; max-width: 360px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .login-card h1 { margin: 0 0 20px; font-size: 24px; text-align: center; color: #f8fafc; }
-        .login-card input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: white; font-size: 16px; box-sizing: border-box; }
-        .login-card button { width: 100%; padding: 14px; background: var(--accent); border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 16px; transition: 0.2s; }
-        .login-card button:active { transform: scale(0.98); }
-
-        /* Ana Uygulama Arayüzü */
-        #app-container { display: none; width: 100%; height: 100%; flex-direction: row; }
-        #sidebar { width: 380px; background: var(--panel); border-right: 1px solid var(--border); padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
-        #main-view { flex-grow: 1; display: flex; align-items: center; justify-content: center; background: #020617; overflow: auto; padding: 20px; position: relative; }
-        
-        /* Editör Alanları Stili */
-        .field-group { margin-bottom: 25px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; border: 1px solid var(--border); }
-        .field-label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-        
-        /* İnput Kontrolleri */
-        .control-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-        .text-input { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: #fff; font-size: 15px; box-sizing: border-box; }
-        
-        /* Renk Seçici */
-        .color-picker { width: 45px; height: 45px; border: none; border-radius: 8px; cursor: pointer; background: none; padding: 0; }
-        .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
-        .color-picker::-webkit-color-swatch { border: 2px solid var(--border); border-radius: 8px; }
-
-        /* Boyut Sliderı */
-        .size-control { flex-grow: 1; display: flex; align-items: center; gap: 10px; background: var(--input-bg); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border); }
-        .size-slider { flex-grow: 1; cursor: pointer; accent-color: var(--accent); }
-        .size-val { font-size: 12px; color: #94a3b8; min-width: 30px; text-align: right; }
-
-        /* Alt Butonlar */
-        #save-btn { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        #save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        #save-btn:active { transform: scale(0.99); }
-        
-        #status-bar { margin-top: 15px; text-align: center; font-size: 13px; padding: 12px; border-radius: 8px; display: none; font-weight: bold; }
-
-        /* SVG Önizleme Tutucusu */
-        #svg-wrapper { background: white; line-height: 0; box-shadow: 0 0 40px rgba(0,0,0,0.7); position: relative; transition: 0.3s; }
-        svg { max-width: 100%; height: auto; display: block; }
-        
-        /* Tablet/Mobil Uyumluluk */
-        @media (max-width: 900px) {
-            #app-container { flex-direction: column; }
-            #sidebar { width: 100%; height: 50%; border-right: none; border-bottom: 1px solid var(--border); padding: 15px; }
-            #main-view { height: 50%; padding: 10px; }
+        #login-screen { 
+            position: fixed; inset: 0; background: var(--bg); 
+            display: flex; align-items: center; justify-content: center; z-index: 2000; 
         }
+        .login-card { background: var(--panel); padding: 30px; border-radius: 15px; width: 85%; max-width: 350px; text-align: center; }
+        .login-card input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border); background: #000; color: #fff; box-sizing: border-box; }
+        .login-card button { width: 100%; padding: 12px; background: var(--accent); border: none; color: #fff; font-weight: bold; border-radius: 8px; }
+
+        /* Ana Düzen */
+        #app-container { display: none; flex: 1; overflow: hidden; height: 100vh; }
+        
+        /* Editör Paneli - Kaydırılabilir ve Sınırlı Genişlik */
+        #sidebar { 
+            width: 320px; background: var(--panel); border-right: 1px solid var(--border); 
+            display: flex; flex-direction: column; flex-shrink: 0;
+        }
+        
+        .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border); text-align: center; }
+        .sidebar-header h2 { margin: 0; font-size: 18px; color: var(--accent); }
+
+        #editor-fields { 
+            flex: 1; overflow-y: auto; padding: 15px; 
+            scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+        }
+
+        .sidebar-footer { padding: 15px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.2); }
+
+        /* Önizleme Alanı */
+        #main-view { 
+            flex: 1; background: #020617; display: flex; 
+            align-items: center; justify-content: center; overflow: auto; padding: 20px;
+        }
+
+        /* Alan Kutuları */
+        .field-box { 
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border); 
+            border-radius: 10px; padding: 12px; margin-bottom: 15px; 
+        }
+        .field-label { display: block; font-size: 10px; color: #94a3b8; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; }
+
+        /* Kontrol Satırları */
+        .input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+        .text-input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: #000; color: #fff; font-size: 14px; }
+        
+        /* Renk Seçici - Kesin Görünür Kare */
+        .color-input {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            width: 40px; height: 40px; border: 2px solid var(--border); 
+            border-radius: 6px; cursor: pointer; background: none; padding: 0; flex-shrink: 0;
+        }
+        .color-input::-webkit-color-swatch-wrapper { padding: 0; }
+        .color-input::-webkit-color-swatch { border: none; border-radius: 4px; }
+
+        /* Slider */
+        .range-row { display: flex; flex-direction: column; gap: 5px; }
+        .range-header { display: flex; justify-content: space-between; font-size: 10px; color: #888; }
+        input[type=range] { width: 100%; accent-color: var(--accent); margin: 8px 0; }
+
+        /* Butonlar */
+        #save-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #save-btn:disabled { opacity: 0.5; }
+        #status-bar { margin-top: 10px; font-size: 12px; text-align: center; display: none; padding: 8px; border-radius: 5px; }
+
+        /* Tablet Uyumluluk (Dikey) */
+        @media (max-width: 768px) {
+            #app-container { flex-direction: column; }
+            #sidebar { width: 100%; height: 40%; border-right: none; border-bottom: 1px solid var(--border); }
+            #main-view { height: 60%; }
+        }
+
+        #svg-wrapper { background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5); line-height: 0; }
+        svg { max-width: 100%; height: auto; display: block; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-card">
-        <h1>Sistem Girişi</h1>
-        <input type="password" id="passInput" placeholder="Şifrenizi Girin" onkeypress="if(event.key==='Enter') login()">
-        <button id="login-btn" onclick="login()">EDİTÖRÜ AÇ</button>
+        <h1>Giriş</h1>
+        <input type="password" id="passInput" placeholder="Şifre">
+        <button onclick="login()">EDİTÖRÜ AÇ</button>
     </div>
 </div>
 
 <div id="app-container">
     <div id="sidebar">
-        <h2 style="margin-top:0; color:var(--accent); font-size: 22px; text-align: center;">SLAYT YÖNETİMİ</h2>
-        <div id="editor-fields">Yükleniyor...</div>
-        
-        <div style="margin-top: auto; padding-top: 20px;">
-            <button id="save-btn" onclick="saveData()">DEĞİŞİKLİKLERİ KAYDET</button>
+        <div class="sidebar-header"><h2>SLAYT EDİTÖRÜ</h2></div>
+        <div id="editor-fields"></div>
+        <div class="sidebar-footer">
+            <button id="save-btn" onclick="saveData()">KAYDET</button>
             <div id="status-bar"></div>
-            <button onclick="location.reload()" style="background:none; border:none; color:#475569; width:100%; margin-top:15px; text-decoration:underline; font-size:12px; cursor:pointer;">Güvenli Çıkış</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:#64748b; width:100%; margin-top:10px; font-size:11px; text-decoration:underline;">Çıkış</button>
         </div>
     </div>
-    
     <div id="main-view">
-        <div id="svg-wrapper">
-            <div id="canvas-inner"></div>
-        </div>
+        <div id="svg-wrapper"><div id="canvas-inner"></div></div>
     </div>
 </div>
 
 <script>
-    // --- AYAR: Cloudflare URL'nizi buraya yapıştırın ---
-    const WORKER_URL = "https://githubtoken.tafbilgiislem.workers.dev/"; 
-    
+    const WORKER_URL = "https://githubtoken.tafbilgiislem.workers.dev/"; // Kendi URL'niz
     let SHA_KEY = "";
     let SESSION_PASS = "";
 
-    // 1. GİRİŞ FONKSİYONU
     async function login() {
         const pass = document.getElementById('passInput').value;
-        const btn = document.getElementById('login-btn');
-        
-        if(!pass) { alert("Şifre boş olamaz!"); return; }
-        
-        btn.innerText = "DOĞRULANIYOR...";
-        btn.disabled = true;
-
         try {
-            const res = await fetch(WORKER_URL, {
-                headers: { "X-Auth-Key": pass }
-            });
-
-            if (res.status === 401) {
-                alert("HATA: Şifre Yanlış!");
-                btn.innerText = "EDİTÖRÜ AÇ";
-                btn.disabled = false;
-                return;
-            }
-
-            if (!res.ok) throw new Error("Sunucu hatası: " + res.status);
-
+            const res = await fetch(WORKER_URL, { headers: { "X-Auth-Key": pass } });
+            if (res.status === 401) { alert("Şifre Yanlış!"); return; }
             const data = await res.json();
             SESSION_PASS = pass;
             SHA_KEY = data.sha;
-            
-            // Ekran değiştir
             document.getElementById('login-screen').style.display = "none";
             document.getElementById('app-container').style.display = "flex";
-
-            // SVG'yi çöz ve ekrana bas
-            const svgContent = decodeURIComponent(escape(atob(data.content)));
-            document.getElementById('canvas-inner').innerHTML = svgContent;
-            
-            // Editör alanlarını oluştur
-            renderAdvancedFields();
-
-        } catch (e) {
-            alert("BAĞLANTI HATASI: " + e.message + "\nURL: " + WORKER_URL);
-            btn.innerText = "EDİTÖRÜ AÇ";
-            btn.disabled = false;
-        }
+            document.getElementById('canvas-inner').innerHTML = decodeURIComponent(escape(atob(data.content)));
+            renderFields();
+        } catch (e) { alert("Bağlantı Hatası!"); }
     }
 
-    // 2. GELİŞMİŞ EDİTÖR ALANLARINI OLUŞTURMA (Renk & Boyut Dahil)
-    function renderAdvancedFields() {
+    function renderFields() {
         const container = document.getElementById('editor-fields');
         container.innerHTML = "";
         const targets = document.querySelectorAll('.duzenlenebilir');
 
-        if (targets.length === 0) {
-            container.innerHTML = "<p style='color:#edbc4a; text-align:center;'>Düzenlenebilir alan (.duzenlenebilir) bulunamadı.</p>";
-            return;
-        }
-
         targets.forEach((el, i) => {
-            const group = document.createElement('div');
-            group.className = 'field-group';
-            
-            // Başlık (Türkçe Büyük Harf)
-            const label = document.createElement('span');
+            const box = document.createElement('div');
+            box.className = 'field-box';
+
+            const label = document.createElement('label');
             label.className = 'field-label';
-            let rawLabel = el.id ? el.id.replace(/_/g, ' ') : "ALAN " + (i + 1);
-            label.innerText = rawLabel.toLocaleUpperCase('tr-TR');
-            group.appendChild(label);
+            label.innerText = (el.id ? el.id.replace(/_/g, ' ') : "ALAN " + (i + 1)).toLocaleUpperCase('tr-TR');
+            box.appendChild(label);
 
-            // --- Satır 1: Metin Girişi & Renk Seçici ---
-            const row1 = document.createElement('div');
-            row1.className = 'control-row';
+            // Satır: Metin ve Renk
+            const row = document.createElement('div');
+            row.className = 'input-row';
 
-            // Metin Input
-            const input = document.createElement('input');
-            input.type = "text";
-            input.className = "text-input";
-            input.value = el.textContent.trim();
-            // Anlık içerik değişimi
-            input.oninput = (e) => { el.textContent = e.target.value; };
-            row1.appendChild(input);
+            const inp = document.createElement('input');
+            inp.className = "text-input";
+            inp.value = el.textContent.trim();
+            inp.oninput = (e) => { el.textContent = e.target.value; };
+            row.appendChild(inp);
 
-            // Renk Picker (fill özelliği)
-            const colorPicker = document.createElement('input');
-            colorPicker.type = "color";
-            colorPicker.className = "color-picker";
-            // Mevcut rengi al (varsayılan siyah)
-            const currentFill = el.getAttribute('fill') || el.style.fill || "#000000";
-            colorPicker.value = rgbToHex(currentFill); 
-            // Anlık renk değişimi
-            colorPicker.oninput = (e) => { el.setAttribute('fill', e.target.value); };
-            row1.appendChild(colorPicker);
+            const cp = document.createElement('input');
+            cp.type = "color";
+            cp.className = "color-input";
+            // Renk bulma (fill özelliğine bak)
+            const currentColor = el.getAttribute('fill') || window.getComputedStyle(el).fill || "#000000";
+            cp.value = rgbToHex(currentColor);
+            cp.oninput = (e) => { el.setAttribute('fill', e.target.value); el.style.fill = e.target.value; };
+            row.appendChild(cp);
+            box.appendChild(row);
+
+            // Satır: Boyut Slider
+            const sRow = document.createElement('div');
+            sRow.className = 'range-row';
+            let curSize = parseInt(window.getComputedStyle(el).fontSize) || 20;
             
-            group.appendChild(row1);
+            sRow.innerHTML = `
+                <div class="range-header"><span>BOYUT</span><span id="sz-val-${i}">${curSize}px</span></div>
+                <input type="range" min="10" max="150" value="${curSize}" oninput="updateSize(this, ${i})">
+            `;
+            box.appendChild(sRow);
 
-            // --- Satır 2: Boyut Sliderı (font-size özelliği) ---
-            const row2 = document.createElement('div');
-            row2.className = 'control-row';
-
-            const sizeLabel = document.createElement('label');
-            sizeLabel.innerText = "BOYUT:";
-            sizeLabel.style.fontSize = "11px";
-            sizeLabel.style.color = "#888";
-            row2.appendChild(sizeLabel);
-
-            const sizeContainer = document.createElement('div');
-            sizeContainer.className = 'size-control';
-
-            // Mevcut yazı boyutunu al (px cinsinden)
-            let currentSize = parseInt(window.getComputedStyle(el).fontSize) || 20;
-
-            const slider = document.createElement('input');
-            slider.type = "range";
-            slider.className = "size-slider";
-            slider.min = "10"; // Minimum boyut
-            slider.max = "150"; // Maximum boyut
-            slider.value = currentSize;
-            
-            const sizeVal = document.createElement('span');
-            sizeVal.className = 'size-val';
-            sizeVal.innerText = currentSize + "px";
-
-            // Anlık boyut değişimi
-            slider.oninput = (e) => { 
-                const newSize = e.target.value;
-                el.style.fontSize = newSize + "px";
-                sizeVal.innerText = newSize + "px";
-            };
-
-            sizeContainer.appendChild(slider);
-            sizeContainer.appendChild(sizeVal);
-            row2.appendChild(sizeContainer);
-            
-            group.appendChild(row2);
-
-            container.appendChild(group);
+            container.appendChild(box);
         });
     }
 
-    // 3. KAYDETME FONKSİYONU
+    window.updateSize = (slider, index) => {
+        const el = document.querySelectorAll('.duzenlenebilir')[index];
+        el.style.fontSize = slider.value + "px";
+        document.getElementById(`sz-val-${index}`).innerText = slider.value + "px";
+    };
+
+    function rgbToHex(rgb) {
+        if (rgb.startsWith('#')) return rgb;
+        const parts = rgb.match(/\d+/g);
+        if (!parts) return "#000000";
+        return "#" + parts.map(x => parseInt(x).toString(16).padStart(2, '0')).join('').substring(0, 6);
+    }
+
     async function saveData() {
         const btn = document.getElementById('save-btn');
-        const status = document.getElementById('status-bar');
-        
+        const st = document.getElementById('status-bar');
         btn.disabled = true;
-        status.style.display = "block";
-        status.style.background = "#334155";
-        status.style.color = "#fff";
-        status.innerText = "GÜNCELLEMELER GitHub'A GÖNDERİLİYOR...";
+        st.style.display = "block"; st.style.background = "#334155"; st.innerText = "KAYDEDİLİYOR...";
 
         try {
             const svg = document.querySelector('#canvas-inner svg');
             const svgText = new XMLSerializer().serializeToString(svg);
-            const utf8 = new TextEncoder().encode(svgText);
-            let binary = "";
-            utf8.forEach(b => binary += String.fromCharCode(b));
-            const base64 = btoa(binary);
+            const encoded = btoa(unescape(encodeURIComponent(svgText)));
 
             const res = await fetch(WORKER_URL, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json", "X-Auth-Key": SESSION_PASS },
-                body: JSON.stringify({
-                    message: "Tablet Gelişmiş Düzenleme (Renk/Boyut)",
-                    content: base64,
-                    sha: SHA_KEY
-                })
+                body: JSON.stringify({ message: "Tablet Update", content: encoded, sha: SHA_KEY })
             });
 
-            const data = await res.json();
             if (res.ok) {
+                const data = await res.json();
                 SHA_KEY = data.content.sha;
-                status.style.background = "#059669";
-                status.innerText = "DEĞİŞİKLİKLER KALICI OLARAK KAYDEDİLDİ!";
-                alert("Başarıyla kaydedildi!");
-                setTimeout(() => { status.style.display = "none"; }, 3000);
-            } else {
-                alert("Kayıt Hatası: " + (data.error || data.message));
-                status.style.background = "#dc2626";
-                status.innerText = "KAYIT BAŞARISIZ!";
-            }
-        } catch (e) {
-            alert("Sistem Hatası: " + e.message);
-        } finally {
-            btn.disabled = false;
-        }
+                st.style.background = "#059669"; st.innerText = "KAYDEDİLDİ!";
+                setTimeout(() => st.style.display = "none", 2000);
+            } else { alert("Kayıt Hatası!"); }
+        } catch (e) { alert("Hata!"); }
+        btn.disabled = false;
     }
-
-    // --- YARDIMCI FONKSİYON: RGB rengi HEX formatına çevirir (Color Picker için) ---
-    function rgbToHex(rgb) {
-        if (rgb.startsWith('#')) return rgb;
-        const rgbValues = rgb.match(/\d+/g);
-        if (!rgbValues) return "#000000";
-        return "#" + ((1 << 24) + (parseInt(rgbValues[0]) << 16) + (parseInt(rgbValues[1]) << 8) + parseInt(rgbValues[2])).toString(16).slice(1);
-    }
-
 </script>
 </body>
 </html>
