@@ -1,75 +1,40 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<title>Animasyon Senkron Slider</title>
-<style>
-html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;display:flex;justify-content:center;align-items:center;}
-#slider{position:relative;width:100vw;height:100vh;}
-.slide{position:absolute;width:100%;height:100%;opacity:0;transition:all 1s ease-in-out;}
-.slide.active{opacity:1;}
-.zoom{transform:scale(0.5);opacity:0;}.zoom.active{transform:scale(1);opacity:1;transition:all 1s ease-in-out;}
-.cube{transform:rotateY(180deg) scale(.5);opacity:0;}.cube.active{transform:rotateY(0) scale(1);opacity:1;transition:1.5s;}
-</style>
+    <meta charset="UTF-8">
+    <title>Dinamik SVG Sunumu</title>
 </head>
 <body>
-<div id="slider"></div>
+    <div id="svg-container"></div>
 
-<script>
-// --- Slider tanımı ---
-const svgFiles = [
-  {file:"slayt.svg", effect:"zoom", duration:10000},
-  {file:"info.svg", effect:"cube", duration:5000},
-];
+    <script>
+        async function loadAndModifySVG() {
+            const url = 'https://raw.githubusercontent.com/tafbilgiislem/ypm/main/slayt.svg';
+            
+            try {
+                const response = await fetch(url);
+                let svgText = await response.text();
 
-const slider = document.getElementById("slider");
-let slides = [];
-let currentIndex = 0;
+                // SVG'yi ekrana bas
+                const container = document.getElementById('svg-container');
+                container.innerHTML = svgText;
 
-// --- SVG object ekleme ---
-svgFiles.forEach((s, i) => {
-  const obj = document.createElement("object");
-  obj.data = s.file;
-  obj.type = "image/svg+xml";
-  obj.classList.add("slide", s.effect);
-  obj.style.width = "100%";
-  obj.style.height = "100%";
-  obj.dataset.duration = s.duration;
-  slider.appendChild(obj);
-  slides.push(obj);
-});
+                // Değişiklik Yapma Kısmı
+                // Örn: SVG içinde id="baslik" olan bir text alanını değiştirme
+                const svgElement = container.querySelector('svg');
+                const titleElement = svgElement.getElementById('baslik');
+                
+                if (titleElement) {
+                    titleElement.textContent = "Yeni Dinamik Başlık";
+                    titleElement.style.fill = "red"; // Rengini değiştirme
+                }
 
-// --- Slide gösterimi ---
-function showSlide(index){
-  slides.forEach((slide) => slide.classList.remove("active"));
-  const currentSlide = slides[index];
-  currentSlide.classList.add("active");
-
-  const duration = parseInt(currentSlide.dataset.duration,10);
-  currentIndex = index;
-  let next = currentIndex + 1;
-  if(next >= slides.length) next = 0;
-
-  setTimeout(()=>showSlide(next), duration);
-}
-
-// --- Başlat ---
-showSlide(0);
-
-// --- Gerçek zamanlı SVG güncelleme (flicker-free) ---
-setInterval(() => {
-  slides.forEach((slide, i) => {
-    fetch(svgFiles[i].file, { cache: "no-store" })
-      .then(resp => {
-        if(resp.ok){
-          // Aktif olmayan slide arka planda güncellenir
-          if(!slide.classList.contains("active")){
-            slide.data = svgFiles[i].file + "?t=" + Date.now();
-          }
+            } catch (error) {
+                console.error("SVG yüklenirken hata oluştu:", error);
+            }
         }
-      });
-  });
-}, 1000); // her 1 saniyede kontrol
-</script>
+
+        loadAndModifySVG();
+    </script>
 </body>
 </html>
