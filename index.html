@@ -2,66 +2,74 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>SVG Slayt Editörü - Güvenli Kayıt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SVG Slayt Editörü - Tablet Uyumlu</title>
     <style>
-        body { display: flex; margin: 0; font-family: 'Segoe UI', sans-serif; height: 100vh; background: #1a1a1b; color: white; }
+        :root { --accent: #ff4500; --bg: #121212; --panel: #1e1e1e; }
+        body { display: flex; flex-direction: column; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; height: 100vh; background: var(--bg); color: white; overflow: hidden; }
         
-        /* Editör Paneli */
+        /* Tablet için Alt-Üst veya Yan Düzen (Ekran Genişliğine Göre) */
+        @media (min-width: 768px) {
+            body { flex-direction: row; }
+            #editor-panel { width: 350px; border-right: 1px solid #333; height: 100vh; }
+        }
+
         #editor-panel { 
-            width: 350px; background: #272729; padding: 25px; 
-            border-right: 1px solid #343435; overflow-y: auto; display: flex; flex-direction: column;
+            background: var(--panel); padding: 20px; overflow-y: auto; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index: 10;
         }
         
-        /* Önizleme Alanı */
         #preview-area { 
             flex-grow: 1; display: flex; align-items: center; justify-content: center; 
-            background: #0f0f0f; padding: 20px;
+            background: #000; overflow: auto; padding: 10px; position: relative;
         }
 
-        h3 { color: #d7dadc; border-bottom: 1px solid #343435; padding-bottom: 10px; margin-top: 0; }
+        h3 { color: var(--accent); margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 1.2rem; }
         
-        .input-group { margin-bottom: 20px; }
-        label { display: block; font-size: 12px; color: #818384; margin-bottom: 8px; text-transform: uppercase; font-weight: bold; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
         input { 
-            width: 100%; padding: 10px; background: #1a1a1b; border: 1px solid #343435; 
-            color: #d7dadc; border-radius: 4px; box-sizing: border-box; font-size: 14px;
+            width: 100%; padding: 12px; background: #000; border: 1px solid #444; 
+            color: #fff; border-radius: 6px; box-sizing: border-box; font-size: 16px; /* Tablette zoom yapmaması için 16px */
         }
-        input:focus { border-color: #0079d3; outline: none; }
 
-        /* Buton ve Durum Mesajları */
         #save-btn { 
-            width: 100%; padding: 15px; background: #d93a00; color: white; border: none; 
-            border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s;
+            width: 100%; padding: 16px; background: var(--accent); color: white; border: none; 
+            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
-        #save-btn:hover { background: #ff4500; }
-        #save-btn:disabled { background: #4d4d4d; cursor: not-allowed; }
+        #save-btn:active { transform: scale(0.98); background: #cc3700; }
+        #save-btn:disabled { background: #444; color: #888; }
 
         #status { 
-            margin-top: 20px; padding: 10px; border-radius: 4px; text-align: center; 
-            font-size: 14px; font-weight: 500; display: none; /* Başlangıçta gizli */
+            margin-top: 15px; padding: 12px; border-radius: 6px; text-align: center; 
+            font-size: 14px; display: none; font-weight: bold;
         }
 
-        svg { background: white; max-width: 95%; height: auto; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        #svg-wrapper { background: white; line-height: 0; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        svg { max-width: 100%; height: auto; display: block; }
     </style>
 </head>
 <body>
 
 <div id="editor-panel">
-    <h3>Dinamik Alanlar</h3>
-    <div id="controls">Yükleniyor...</div>
+    <h3>Slayt Editörü</h3>
+    <div id="controls">Veriler çekiliyor...</div>
     
-    <hr style="border: 0; border-top: 1px solid #343435; margin: 20px 0;">
-    
-    <button id="save-btn" onclick="save()">DEĞİŞİKLİKLERİ KAYDET</button>
-    <div id="status"></div>
+    <div style="margin-top: 20px;">
+        <button id="save-btn" onclick="save()">DEĞİŞİKLİKLERİ KAYDET</button>
+        <div id="status"></div>
+    </div>
 </div>
 
 <div id="preview-area">
-    <div id="canvas"></div>
+    <div id="svg-wrapper">
+        <div id="canvas"></div>
+    </div>
 </div>
 
 <script>
-    // Cloudflare Worker URL'nizi buraya yapıştırın
+    // BULUT ADRESİNİZİ BURAYA YAZIN
     const WORKER_URL = "https://githubtoken.tafbilgiislem.workers.dev/"; 
     let currentSha = "";
 
@@ -74,32 +82,38 @@
             const data = await res.json();
 
             if (data.message === "Bad credentials") {
-                controls.innerHTML = "<b style='color:#ff4500'>Hata: Token Geçersiz!</b>";
+                alert("Hata: GitHub Token geçersiz. Cloudflare Worker ayarlarını kontrol edin.");
+                controls.innerHTML = "Bağlantı Hatası.";
                 return;
             }
 
             currentSha = data.sha;
             
-            // SVG'yi ekrana bas
+            // Base64 SVG'yi tablet dostu decode et
             const svgContent = decodeURIComponent(escape(atob(data.content)));
             document.getElementById('canvas').innerHTML = svgContent;
             
-            // Sadece .duzenlenebilir sınıfına sahip olanları çek
+            // Sadece .duzenlenebilir sınıfını bul
             const targets = document.querySelectorAll('.duzenlenebilir');
             controls.innerHTML = ""; 
+
+            if (targets.length === 0) {
+                controls.innerHTML = "<p style='color:#edbc4a;'>Düzenlenebilir alan (.duzenlenebilir) bulunamadı.</p>";
+                return;
+            }
 
             targets.forEach((el, i) => {
                 const div = document.createElement('div');
                 div.className = 'input-group';
                 
                 const label = document.createElement('label');
-                // ID varsa ID'yi, yoksa "Alan X" yaz
-                label.innerText = el.id ? el.id.replace(/_/g, ' ') : "Alan " + (i + 1);
+                label.innerText = el.id ? el.id.replace(/_/g, ' ') : "Metin " + (i + 1);
                 
                 const inp = document.createElement('input');
                 inp.type = "text";
                 inp.value = el.textContent.trim();
                 
+                // Anlık önizleme
                 inp.oninput = (e) => { 
                     el.textContent = e.target.value; 
                 };
@@ -109,12 +123,9 @@
                 controls.appendChild(div);
             });
 
-            if (targets.length === 0) {
-                controls.innerHTML = "<p style='color:#edbc4a; font-size:13px;'>Düzenlenebilir alan bulunamadı. <br>SVG'ye class='duzenlenebilir' ekleyin.</p>";
-            }
-
         } catch (err) {
-            controls.innerHTML = "<b style='color:#ff4500'>Bağlantı Hatası:</b> " + err.message;
+            alert("Yükleme Hatası: " + err.message);
+            controls.innerHTML = "Hata oluştu.";
         }
     }
 
@@ -122,50 +133,60 @@
         const btn = document.getElementById('save-btn');
         const status = document.getElementById('status');
         
-        // Geri bildirim başlat
         btn.disabled = true;
         status.style.display = "block";
-        status.style.background = "#343435";
-        status.style.color = "#d7dadc";
-        status.innerText = "Kaydediliyor... Lütfen bekleyin.";
+        status.style.background = "#333";
+        status.style.color = "#fff";
+        status.innerText = "Kaydediliyor...";
 
         try {
-            const svgCode = document.getElementById('canvas').innerHTML;
-            const encoded = btoa(unescape(encodeURIComponent(svgCode)));
+            const svgElement = document.querySelector('#canvas svg');
+            if (!svgElement) throw new Error("SVG bulunamadı.");
 
-            const res = await fetch(WORKER_URL, {
+            // Tablet/Chrome uyumlu metne çevirme
+            const serializer = new XMLSerializer();
+            const svgCode = serializer.serializeToString(svgElement);
+            
+            // UTF-8 uyumlu Base64 (Android için en güvenli yol)
+            const utf8Bytes = new TextEncoder().encode(svgCode);
+            let binary = "";
+            utf8Bytes.forEach(b => binary += String.fromCharCode(b));
+            const encoded = btoa(binary);
+
+            const response = await fetch(WORKER_URL, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    message: "Web Editor: Dinamik alanlar güncellendi",
+                    message: "Tablet Editör Güncellemesi",
                     content: encoded,
                     sha: currentSha
                 })
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                currentSha = data.content.sha; // Yeni SHA'yı güncelle (tekrar kaydetmek için şart)
-                
+            const data = await response.json();
+
+            if (response.ok) {
+                currentSha = data.content.sha; // SHA güncelle
                 status.style.background = "#27ae60";
-                status.style.color = "white";
-                status.innerText = "Kalıcı olarak kaydedildi!";
-                
-                // 3 saniye sonra mesajı gizle
+                status.innerText = "BAŞARIYLA KAYDEDİLDİ!";
+                alert("Kayıt Başarılı! Değişiklikler GitHub'a iletildi.");
                 setTimeout(() => { status.style.display = "none"; }, 3000);
             } else {
-                throw new Error("Kayıt sırasında sunucu hatası oluştu.");
+                const msg = data.message || "GitHub bir hata döndürdü.";
+                alert("Kayıt Hatası: " + msg);
+                status.style.background = "#ff4500";
+                status.innerText = "Hata Oluştu!";
             }
         } catch (err) {
+            alert("İşlem Hatası: " + err.toString());
             status.style.background = "#ff4500";
-            status.style.color = "white";
-            status.innerText = "Hata: " + err.message;
+            status.innerText = "Bağlantı Hatası!";
         } finally {
             btn.disabled = false;
         }
     }
 
-    // İlk yükleme
+    // Başlat
     load();
 </script>
 </body>
