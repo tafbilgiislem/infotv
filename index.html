@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Güvenli SVG Yönetim Paneli</title>
+    <title>SVG Yönetim Paneli | Güvenli & Türkçe</title>
     <style>
-        :root { --accent: #007bff; --bg: #0f172a; --panel: #1e293b; }
-        body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: white; height: 100vh; display: flex; overflow: hidden; }
+        :root { --accent: #10b981; --bg: #0f172a; --panel: #1e293b; --input-bg: #0f172a; }
+        body { margin: 0; font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: white; height: 100vh; display: flex; overflow: hidden; }
 
         /* Login Ekranı */
         #login-screen {
@@ -15,34 +15,33 @@
         }
         .login-card {
             background: var(--panel); padding: 40px; border-radius: 16px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 100%; max-width: 360px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 90%; max-width: 360px;
         }
         .login-card h1 { margin: 0 0 20px; font-size: 24px; text-align: center; color: #f8fafc; }
         .login-card input {
             width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px;
-            border: 1px solid #334155; background: #0f172a; color: white; font-size: 16px; box-sizing: border-box;
+            border: 1px solid #334155; background: var(--input-bg); color: white; font-size: 16px; box-sizing: border-box;
         }
         .login-card button {
             width: 100%; padding: 14px; background: var(--accent); border: none;
             color: white; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s;
         }
-        .login-card button:hover { background: #2563eb; }
 
-        /* Editor Ekranı (Başlangıçta Gizli) */
-        #app-container { display: none; width: 100%; height: 100%; }
+        /* Editor Arayüzü */
+        #app-container { display: none; width: 100%; height: 100%; flex-direction: row; }
         #sidebar { width: 350px; background: var(--panel); border-right: 1px solid #334155; padding: 25px; overflow-y: auto; }
         #main-view { flex-grow: 1; display: flex; align-items: center; justify-content: center; background: #020617; overflow: auto; padding: 20px; }
         
         .field-group { margin-bottom: 20px; }
-        .field-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; font-weight: 600; }
-        .field-group input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 15px; box-sizing: border-box; }
+        .field-group label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 6px; font-weight: bold; letter-spacing: 0.5px; }
+        .field-group input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: var(--input-bg); color: #fff; font-size: 15px; box-sizing: border-box; }
 
-        #save-btn { width: 100%; padding: 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; }
-        #save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #save-btn { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s; }
+        #save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        #status-bar { margin-top: 15px; text-align: center; font-size: 13px; padding: 10px; border-radius: 8px; display: none; }
-        #svg-holder { background: white; padding: 0; line-height: 0; box-shadow: 0 0 40px rgba(0,0,0,0.7); }
-        svg { max-width: 100%; height: auto; }
+        #status-bar { margin-top: 15px; text-align: center; font-size: 13px; padding: 12px; border-radius: 8px; display: none; font-weight: bold; }
+        #svg-holder { background: white; line-height: 0; box-shadow: 0 0 40px rgba(0,0,0,0.8); }
+        svg { max-width: 100%; height: auto; display: block; }
 
         @media (max-width: 800px) {
             #app-container { flex-direction: column; }
@@ -63,12 +62,12 @@
 
 <div id="app-container">
     <div id="sidebar">
-        <h2 style="margin-top:0; font-size: 20px; color: #10b981;">Slayt Editörü</h2>
+        <h2 style="margin-top:0; font-size: 20px; color: var(--accent);">SLAYT EDİTÖRÜ</h2>
         <div id="editor-fields">Dosyalar okunuyor...</div>
         <hr style="border:0; border-top:1px solid #334155; margin: 25px 0;">
         <button id="save-btn" onclick="saveData()">DEĞİŞİKLİKLERİ KAYDET</button>
         <div id="status-bar"></div>
-        <button onclick="location.reload()" style="background:none; border:none; color:#475569; width:100%; margin-top:20px; text-decoration:underline; font-size:12px;">Güvenli Çıkış Yap</button>
+        <button onclick="location.reload()" style="background:none; border:none; color:#475569; width:100%; margin-top:20px; text-decoration:underline; font-size:12px; cursor:pointer;">Güvenli Çıkış Yap</button>
     </div>
     <div id="main-view">
         <div id="svg-holder">
@@ -78,7 +77,8 @@
 </div>
 
 <script>
-    const WORKER_URL = "https://githubtoken.tafbilgiislem.workers.dev/"; // Worker URL'ni buraya yapıştır
+    // Cloudflare Worker URL'nizi buraya yazın
+    const WORKER_URL = "https://githubtoken.tafbilgiislem.workers.dev/; 
     let SHA_KEY = "";
     let SESSION_PASS = "";
 
@@ -86,7 +86,6 @@
         const pass = document.getElementById('passInput').value;
         const msg = document.getElementById('login-msg');
         
-        // İlk doğrulama testi için verileri çekmeyi dene
         try {
             const res = await fetch(WORKER_URL, {
                 headers: { "X-Auth-Key": pass }
@@ -98,20 +97,18 @@
             }
 
             const data = await res.json();
-            SESSION_PASS = pass; // Şifreyi oturum boyunca kullanmak için sakla
+            SESSION_PASS = pass; 
             SHA_KEY = data.sha;
             
-            // Ekranları değiştir
             document.getElementById('login-screen').style.display = "none";
             document.getElementById('app-container').style.display = "flex";
 
-            // SVG Yükle
             const svgContent = decodeURIComponent(escape(atob(data.content)));
             document.getElementById('canvas-inner').innerHTML = svgContent;
             renderFields();
 
         } catch (e) {
-            alert("Sunucu Hatası: " + e.message);
+            alert("Bağlantı Hatası: " + e.message);
         }
     }
 
@@ -123,11 +120,20 @@
         targets.forEach((el, i) => {
             const group = document.createElement('div');
             group.className = 'field-group';
+            
             const label = document.createElement('label');
-            label.innerText = el.id ? el.id.replace(/_/g, ' ') : "Alan " + (i + 1);
+            
+            // --- TÜRKÇE KARAKTER UYUMLU BÜYÜK HARF DÖNÜŞTÜRME ---
+            let rawLabel = el.id ? el.id.replace(/_/g, ' ') : "ALAN " + (i + 1);
+            label.innerText = rawLabel.toLocaleUpperCase('tr-TR'); 
+            
             const input = document.createElement('input');
             input.value = el.textContent.trim();
+            
+            // Eğer yazılanın da SVG içinde hep büyük görünmesini istersen:
+            // input.oninput = (e) => { el.textContent = e.target.value.toLocaleUpperCase('tr-TR'); };
             input.oninput = (e) => { el.textContent = e.target.value; };
+            
             group.appendChild(label);
             group.appendChild(input);
             container.appendChild(group);
@@ -141,7 +147,8 @@
         btn.disabled = true;
         status.style.display = "block";
         status.style.background = "#334155";
-        status.innerText = "GitHub güncelleniyor...";
+        status.style.color = "white";
+        status.innerText = "KAYDEDİLİYOR...";
 
         try {
             const svg = document.querySelector('#canvas-inner svg');
@@ -167,11 +174,13 @@
             const data = await res.json();
             if (res.ok) {
                 SHA_KEY = data.content.sha;
-                status.style.background = "#065f46";
+                status.style.background = "#059669";
                 status.innerText = "BAŞARIYLA KAYDEDİLDİ!";
                 setTimeout(() => { status.style.display = "none"; }, 3000);
             } else {
                 alert("Hata: " + data.error);
+                status.style.background = "#dc2626";
+                status.innerText = "HATA OLUŞTU!";
             }
         } catch (e) {
             alert("Kayıt Hatası: " + e.toString());
