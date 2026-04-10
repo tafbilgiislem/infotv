@@ -1,6 +1,6 @@
 // config.js
 const GITHUB_CONFIG = {
-    token: 'ghp_BURAYA_SENIN_TOKENIN_GELECEK', // GitHub'dan aldığın token
+    token: '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', // GitHub'dan aldığın token
     owner: 'tafbilgiislem',           // Örn: 'ahmet_yilmaz'
     repo: 'ypm',                // Örn: 'sunum-deposu'
     path: 'slayt.svg',                        // SVG dosyasının adı ve yolu
