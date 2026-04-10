@@ -3,132 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SVG Slayt Editörü - Tablet Uyumlu</title>
+    <title>SVG Editör | Güvenli Giriş</title>
     <style>
-        :root { --accent: #ff4500; --bg: #121212; --panel: #1e1e1e; }
-        body { display: flex; flex-direction: column; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; height: 100vh; background: var(--bg); color: white; overflow: hidden; }
-        
-        /* Tablet için Alt-Üst veya Yan Düzen (Ekran Genişliğine Göre) */
-        @media (min-width: 768px) {
-            body { flex-direction: row; }
-            #editor-panel { width: 350px; border-right: 1px solid #333; height: 100vh; }
+        :root { --accent: #ff4500; --bg: #121212; --panel: #1e1e1e; --input-bg: #000; }
+        body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: white; height: 100vh; display: flex; overflow: hidden; }
+
+        /* Giriş Ekranı Stili */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); display: flex; align-items: center; justify-content: center;
+            z-index: 9999; transition: 0.5s;
+        }
+        .login-box {
+            background: var(--panel); padding: 30px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 350px; text-align: center;
+        }
+        .login-box h2 { color: var(--accent); margin-bottom: 20px; }
+        .login-box input {
+            width: 100%; padding: 12px; margin-bottom: 15px; background: var(--input-bg);
+            border: 1px solid #333; color: white; border-radius: 6px; box-sizing: border-box; font-size: 16px;
+        }
+        .login-box button {
+            width: 100%; padding: 12px; background: var(--accent); border: none;
+            color: white; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px;
         }
 
-        #editor-panel { 
-            background: var(--panel); padding: 20px; overflow-y: auto; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index: 10;
-        }
-        
-        #preview-area { 
-            flex-grow: 1; display: flex; align-items: center; justify-content: center; 
-            background: #000; overflow: auto; padding: 10px; position: relative;
-        }
+        /* Editör Arayüzü (Başlangıçta Gizli) */
+        #main-container { display: none; width: 100%; height: 100%; flex-direction: row; }
+        @media (max-width: 768px) { #main-container { flex-direction: column; } }
 
-        h3 { color: var(--accent); margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 1.2rem; }
+        #editor-panel { width: 350px; background: var(--panel); padding: 20px; border-right: 1px solid #333; overflow-y: auto; }
+        @media (max-width: 768px) { #editor-panel { width: 100%; height: 40%; border-right: none; border-bottom: 1px solid #333; } }
+
+        #preview-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: auto; padding: 10px; }
         
         .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-        input { 
-            width: 100%; padding: 12px; background: #000; border: 1px solid #444; 
-            color: #fff; border-radius: 6px; box-sizing: border-box; font-size: 16px; /* Tablette zoom yapmaması için 16px */
-        }
+        label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase; }
+        .editor-input { width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid #444; color: #fff; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
 
-        #save-btn { 
-            width: 100%; padding: 16px; background: var(--accent); color: white; border: none; 
-            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
-        #save-btn:active { transform: scale(0.98); background: #cc3700; }
-        #save-btn:disabled { background: #444; color: #888; }
+        #save-btn { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        #save-btn:disabled { background: #444; }
 
-        #status { 
-            margin-top: 15px; padding: 12px; border-radius: 6px; text-align: center; 
-            font-size: 14px; display: none; font-weight: bold;
-        }
-
-        #svg-wrapper { background: white; line-height: 0; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        #status { margin-top: 15px; padding: 10px; border-radius: 6px; text-align: center; font-size: 14px; display: none; }
+        #svg-wrapper { background: white; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         svg { max-width: 100%; height: auto; display: block; }
     </style>
 </head>
 <body>
 
-<div id="editor-panel">
-    <h3>Slayt Editörü</h3>
-    <div id="controls">Veriler çekiliyor...</div>
-    
-    <div style="margin-top: 20px;">
-        <button id="save-btn" onclick="save()">DEĞİŞİKLİKLERİ KAYDET</button>
-        <div id="status"></div>
+<div id="login-overlay">
+    <div class="login-box">
+        <h2>Panel Girişi</h2>
+        <input type="text" id="username" placeholder="Kullanıcı Adı">
+        <input type="password" id="password" placeholder="Şifre">
+        <button onclick="checkLogin()">GİRİŞ YAP</button>
+        <p id="login-error" style="color: #ff4500; font-size: 13px; margin-top: 10px; display: none;">Hatalı giriş!</p>
     </div>
 </div>
 
-<div id="preview-area">
-    <div id="svg-wrapper">
-        <div id="canvas"></div>
+<div id="main-container">
+    <div id="editor-panel">
+        <h3 style="color: var(--accent); margin-top: 0;">Slayt Editörü</h3>
+        <div id="controls">Yükleniyor...</div>
+        <hr style="border:0; border-top:1px solid #333; margin: 20px 0;">
+        <button id="save-btn" onclick="save()">DEĞİŞİKLİKLERİ KAYDET</button>
+        <div id="status"></div>
+        <button onclick="location.reload()" style="background:none; border:none; color:#555; width:100%; margin-top:20px; cursor:pointer; font-size:12px;">Güvenli Çıkış</button>
+    </div>
+
+    <div id="preview-area">
+        <div id="svg-wrapper">
+            <div id="canvas"></div>
+        </div>
     </div>
 </div>
 
 <script>
-    // BULUT ADRESİNİZİ BURAYA YAZIN
-    const WORKER_URL = "https://githubtoken.tafbilgiislem.workers.dev/"; 
+    // AYARLAR
+    const LOGIN_CONFIG = {
+        user: "admin",      // Kullanıcı adınız
+        pass: "12345"       // Şifreniz (Burayı mutlaka değiştirin)
+    };
+
+    const WORKER_URL = "https://githubtoken.tafbilgiislem.workers.dev/"; // Cloudflare linkiniz
     let currentSha = "";
 
+    // 1. GİRİŞ KONTROLÜ
+    function checkLogin() {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+        const err = document.getElementById('login-error');
+
+        if(u === LOGIN_CONFIG.user && p === LOGIN_CONFIG.pass) {
+            document.getElementById('login-overlay').style.opacity = "0";
+            setTimeout(() => {
+                document.getElementById('login-overlay').style.display = "none";
+                document.getElementById('main-container').style.display = "flex";
+                load(); // Giriş başarılıysa verileri çek
+            }, 500);
+        } else {
+            err.style.display = "block";
+            setTimeout(() => { err.style.display = "none"; }, 2000);
+        }
+    }
+
+    // 2. VERİ ÇEKME
     async function load() {
         const controls = document.getElementById('controls');
-        const status = document.getElementById('status');
-        
         try {
             const res = await fetch(WORKER_URL);
             const data = await res.json();
 
             if (data.message === "Bad credentials") {
-                alert("Hata: GitHub Token geçersiz. Cloudflare Worker ayarlarını kontrol edin.");
-                controls.innerHTML = "Bağlantı Hatası.";
+                alert("GitHub Hatası: Token geçersiz!");
                 return;
             }
 
             currentSha = data.sha;
-            
-            // Base64 SVG'yi tablet dostu decode et
             const svgContent = decodeURIComponent(escape(atob(data.content)));
             document.getElementById('canvas').innerHTML = svgContent;
             
-            // Sadece .duzenlenebilir sınıfını bul
             const targets = document.querySelectorAll('.duzenlenebilir');
             controls.innerHTML = ""; 
-
-            if (targets.length === 0) {
-                controls.innerHTML = "<p style='color:#edbc4a;'>Düzenlenebilir alan (.duzenlenebilir) bulunamadı.</p>";
-                return;
-            }
 
             targets.forEach((el, i) => {
                 const div = document.createElement('div');
                 div.className = 'input-group';
-                
                 const label = document.createElement('label');
-                label.innerText = el.id ? el.id.replace(/_/g, ' ') : "Metin " + (i + 1);
-                
+                label.innerText = el.id ? el.id.replace(/_/g, ' ') : "Alan " + (i + 1);
                 const inp = document.createElement('input');
-                inp.type = "text";
+                inp.className = "editor-input";
                 inp.value = el.textContent.trim();
-                
-                // Anlık önizleme
-                inp.oninput = (e) => { 
-                    el.textContent = e.target.value; 
-                };
-
+                inp.oninput = (e) => { el.textContent = e.target.value; };
                 div.appendChild(label);
                 div.appendChild(inp);
                 controls.appendChild(div);
             });
-
         } catch (err) {
             alert("Yükleme Hatası: " + err.message);
-            controls.innerHTML = "Hata oluştu.";
         }
     }
 
+    // 3. KAYDETME
     async function save() {
         const btn = document.getElementById('save-btn');
         const status = document.getElementById('status');
@@ -136,18 +152,13 @@
         btn.disabled = true;
         status.style.display = "block";
         status.style.background = "#333";
-        status.style.color = "#fff";
         status.innerText = "Kaydediliyor...";
 
         try {
             const svgElement = document.querySelector('#canvas svg');
-            if (!svgElement) throw new Error("SVG bulunamadı.");
-
-            // Tablet/Chrome uyumlu metne çevirme
             const serializer = new XMLSerializer();
             const svgCode = serializer.serializeToString(svgElement);
             
-            // UTF-8 uyumlu Base64 (Android için en güvenli yol)
             const utf8Bytes = new TextEncoder().encode(svgCode);
             let binary = "";
             utf8Bytes.forEach(b => binary += String.fromCharCode(b));
@@ -157,7 +168,7 @@
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    message: "Tablet Editör Güncellemesi",
+                    message: "Tablet Guncellemesi",
                     content: encoded,
                     sha: currentSha
                 })
@@ -166,28 +177,22 @@
             const data = await response.json();
 
             if (response.ok) {
-                currentSha = data.content.sha; // SHA güncelle
+                currentSha = data.content.sha;
                 status.style.background = "#27ae60";
-                status.innerText = "BAŞARIYLA KAYDEDİLDİ!";
-                alert("Kayıt Başarılı! Değişiklikler GitHub'a iletildi.");
+                status.innerText = "KAYDEDİLDİ!";
+                alert("Başarıyla kaydedildi!");
                 setTimeout(() => { status.style.display = "none"; }, 3000);
             } else {
-                const msg = data.message || "GitHub bir hata döndürdü.";
-                alert("Kayıt Hatası: " + msg);
+                alert("Kayıt Hatası: " + data.message);
                 status.style.background = "#ff4500";
-                status.innerText = "Hata Oluştu!";
+                status.innerText = "Hata!";
             }
         } catch (err) {
-            alert("İşlem Hatası: " + err.toString());
-            status.style.background = "#ff4500";
-            status.innerText = "Bağlantı Hatası!";
+            alert("Sistem Hatası: " + err.toString());
         } finally {
             btn.disabled = false;
         }
     }
-
-    // Başlat
-    load();
 </script>
 </body>
 </html>
