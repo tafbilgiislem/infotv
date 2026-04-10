@@ -32,49 +32,55 @@
     let currentSha = "";
 
     async function load() {
+    const controls = document.getElementById('controls');
+    try {
         const res = await fetch(WORKER_URL);
         const data = await res.json();
+
         currentSha = data.sha;
-        
         const svgContent = decodeURIComponent(escape(atob(data.content)));
         document.getElementById('canvas').innerHTML = svgContent;
         
-        // Inputları oluştur
-        const controls = document.getElementById('controls');
-        controls.innerHTML = "";
-        document.querySelectorAll('text, tspan').forEach((el, i) => {
-            if(!el.textContent.trim()) return;
+        controls.innerHTML = ""; 
+
+        // KRİTİK DEĞİŞİKLİK BURADA: 
+        // Sadece class'ı "duzenlenebilir" olanları bulur
+        const targets = document.querySelectorAll('.duzenlenebilir');
+
+        targets.forEach((el, i) => {
+            const div = document.createElement('div');
+            div.style.marginBottom = "15px";
+            
+            const label = document.createElement('label');
+            // Eğer elementin bir ID'si varsa ismini oradan al, yoksa numara ver
+            label.innerText = el.id ? el.id : "Metin Alanı " + (i + 1);
+            label.style.display = "block";
+            label.style.fontSize = "12px";
+            label.style.color = "#888";
+
             const inp = document.createElement('input');
             inp.value = el.textContent.trim();
-            inp.oninput = (e) => { el.textContent = e.target.value; };
-            controls.appendChild(inp);
-        });
-    }
+            inp.style.width = "100%";
+            inp.style.padding = "8px";
+            inp.style.marginTop = "5px";
+            
+            inp.oninput = (e) => { 
+                el.textContent = e.target.value; 
+            };
 
-    async function save() {
-        const status = document.getElementById('status');
-        status.innerText = "Kaydediliyor...";
-        
-        const svgCode = document.getElementById('canvas').innerHTML;
-        const encoded = btoa(unescape(encodeURIComponent(svgCode)));
-
-        const res = await fetch(WORKER_URL, {
-            method: "PUT",
-            body: JSON.stringify({
-                message: "Cloudflare üzerinden güncellendi",
-                content: encoded,
-                sha: currentSha
-            })
+            div.appendChild(label);
+            div.appendChild(inp);
+            controls.appendChild(div);
         });
 
-        if(res.ok) {
-            const data = await res.json();
-            currentSha = data.content.sha;
-            status.innerText = "Kalıcı olarak kaydedildi!";
-        } else {
-            status.innerText = "Hata oluştu.";
+        if (targets.length === 0) {
+            controls.innerHTML = "<p style='color:orange'>Düzenlenebilir alan bulunamadı. SVG'deki metinlere class='duzenlenebilir' eklediğinizden emin olun.</p>";
         }
+
+    } catch (err) {
+        controls.innerHTML = "<b style='color:red'>Bağlantı Hatası:</b> " + err.message;
     }
+}
 
     load();
 </script>
