@@ -2,39 +2,164 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Dinamik SVG Sunumu</title>
-</head>
-<body>
-    <div id="svg-container"></div>
-
-    <script>
-        async function loadAndModifySVG() {
-            const url = 'https://raw.githubusercontent.com/tafbilgiislem/ypm/main/slayt.svg';
-            
-            try {
-                const response = await fetch(url);
-                let svgText = await response.text();
-
-                // SVG'yi ekrana bas
-                const container = document.getElementById('svg-container');
-                container.innerHTML = svgText;
-
-                // Değişiklik Yapma Kısmı
-                // Örn: SVG içinde id="baslik" olan bir text alanını değiştirme
-                const svgElement = container.querySelector('svg');
-                const titleElement = svgElement.getElementById('baslik');
-                
-                if (titleElement) {
-                    titleElement.textContent = "Yeni Dinamik Başlık";
-                    titleElement.style.fill = "red"; // Rengini değiştirme
-                }
-
-            } catch (error) {
-                console.error("SVG yüklenirken hata oluştu:", error);
-            }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Metin Editörü & Kalıcı Kayıt</title>
+    <style>
+        :root { --primary-color: #2ecc71; --bg-dark: #1a1a1a; --panel-bg: #2d2d2d; }
+        body { display: flex; margin: 0; font-family: 'Segoe UI', sans-serif; height: 100vh; background: #f5f5f5; }
+        
+        /* Sol Panel */
+        #editor-panel {
+            width: 380px; background: var(--panel-bg); color: white; padding: 25px;
+            overflow-y: auto; box-shadow: 5px 0 15px rgba(0,0,0,0.2); display: flex; flex-direction: column;
+        }
+        
+        /* Sağ Önizleme */
+        #preview-area {
+            flex-grow: 1; display: flex; align-items: center; justify-content: center;
+            overflow: auto; padding: 20px;
         }
 
-        loadAndModifySVG();
-    </script>
+        .input-group { margin-bottom: 15px; background: #3d3d3d; padding: 10px; border-radius: 6px; }
+        label { display: block; font-size: 11px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
+        input[type="text"] {
+            width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #555;
+            background: #252525; color: #00ffcc; box-sizing: border-box; font-size: 14px;
+        }
+
+        #save-btn {
+            background: var(--primary-color); color: white; border: none; padding: 15px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px;
+            margin-top: 20px; transition: 0.3s;
+        }
+        #save-btn:hover { background: #27ae60; transform: translateY(-2px); }
+        #save-btn:disabled { background: #555; cursor: not-allowed; }
+
+        #status { margin-top: 15px; font-size: 13px; text-align: center; }
+        svg { background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 100%; height: auto; }
+        h2 { margin-top: 0; color: var(--primary-color); border-bottom: 1px solid #444; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="editor-panel">
+    <h2>Slayt Editörü</h2>
+    <div id="controls-container">SVG Yükleniyor...</div>
+    <button id="save-btn" onclick="saveToGithub()">DEĞİŞİKLİKLERİ KAYDET</button>
+    <div id="status"></div>
+</div>
+
+<div id="preview-area">
+    <div id="svg-canvas"></div>
+</div>
+
+<script type="module">
+    import CONFIG from './config.js';
+
+    let currentSha = ""; // GitHub versiyon takibi için
+
+    async function loadSVG() {
+        const status = document.getElementById('status');
+        const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.path}?ref=${CONFIG.branch}`;
+        
+        try {
+            const response = await fetch(url, {
+                headers: { 'Authorization': `token ${CONFIG.token}` }
+            });
+            
+            if (!response.ok) throw new Error("Dosya çekilemedi. Ayarları kontrol et.");
+            
+            const data = await response.json();
+            currentSha = data.sha;
+            
+            // Base64 içeriği Türkçeye uygun çözme
+            const svgContent = decodeURIComponent(escape(atob(data.content))); 
+            document.getElementById('svg-canvas').innerHTML = svgContent;
+
+            generateInputs(document.querySelector('svg'));
+            status.innerText = "Bağlantı başarılı.";
+            status.style.color = "#2ecc71";
+        } catch (err) {
+            status.innerText = "Hata: " + err.message;
+            status.style.color = "#e74c3c";
+        }
+    }
+
+    function generateInputs(svg) {
+        const container = document.getElementById('controls-container');
+        container.innerHTML = "";
+        const textElements = svg.querySelectorAll('text, tspan');
+
+        textElements.forEach((el, index) => {
+            const content = el.textContent.trim();
+            if (!content) return;
+
+            const group = document.createElement('div');
+            group.className = 'input-group';
+            
+            const label = document.createElement('label');
+            label.innerText = `Metin Alanı ${index + 1}`;
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = content;
+            input.oninput = (e) => { el.textContent = e.target.value; };
+
+            group.appendChild(label);
+            group.appendChild(input);
+            container.appendChild(group);
+        });
+    }
+
+    // Fonksiyonu dışarıya (butona) açmak için pencereye bağlıyoruz
+    window.saveToGithub = async () => {
+        const btn = document.getElementById('save-btn');
+        const status = document.getElementById('status');
+        
+        btn.disabled = true;
+        status.innerText = "GitHub'a gönderiliyor...";
+        status.style.color = "white";
+
+        const svgCode = document.getElementById('svg-canvas').innerHTML;
+        // UTF-8 destekli Base64 encode
+        const encodedContent = btoa(unescape(encodeURIComponent(svgCode)));
+
+        const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.path}`;
+        
+        try {
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${CONFIG.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: "Web Editor: Metin güncellendi",
+                    content: encodedContent,
+                    sha: currentSha,
+                    branch: CONFIG.branch
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                currentSha = result.content.sha;
+                status.innerText = "KAYDEDİLDİ! Slayt birazdan güncellenecek.";
+                status.style.color = "#2ecc71";
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message);
+            }
+        } catch (err) {
+            status.innerText = "Kayıt Hatası: " + err.message;
+            status.style.color = "#e74c3c";
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
+    loadSVG();
+</script>
+
 </body>
 </html>
