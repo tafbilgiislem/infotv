@@ -3,92 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SVG Pro Editor | Drag & Drop</title>
+    <title>SVG Pro Editor | Çoklu Slayt</title>
     <style>
         :root { --accent: #10b981; --bg: #0f172a; --panel: #1e293b; --border: #334155; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            margin: 0; font-family: -apple-system, sans-serif; 
-            background: var(--bg); color: white; height: 100vh; 
-            display: flex; flex-direction: column; overflow: hidden; 
-        }
+        body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Giriş Ekranı */
+        /* Giriş ve Üst Navigasyon */
         #login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 10000; }
         .login-card { background: var(--panel); padding: 30px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid var(--border); }
-        .login-card input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border); background: #000; color: #fff; font-size: 16px; text-align: center; }
-        .login-card button { width: 100%; padding: 14px; background: var(--accent); border: none; color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; }
-
-        /* Ana Arayüz */
+        
         #app-container { display: none; height: 100vh; width: 100vw; flex-direction: row; }
         @media (max-width: 1023px) { #app-container { flex-direction: column; } }
 
-        #sidebar { 
-            display: flex; flex-direction: column; background: var(--panel); 
-            width: 350px; border-right: 1px solid var(--border); flex-shrink: 0; height: 100%;
-        }
-        @media (max-width: 1023px) { 
-            #sidebar { width: 100%; height: 50vh; border-right: none; border-top: 1px solid var(--border); order: 2; }
-            #main-view { height: 50vh; order: 1; }
-        }
+        #sidebar { display: flex; flex-direction: column; background: var(--panel); width: 350px; border-right: 1px solid var(--border); flex-shrink: 0; height: 100%; }
+        @media (max-width: 1023px) { #sidebar { width: 100%; height: 50vh; border-right: none; border-top: 1px solid var(--border); order: 2; } #main-view { height: 50vh; order: 1; } }
 
-        .sidebar-top-nav { padding: 10px; border-bottom: 2px solid var(--border); background: #111827; flex-shrink: 0; display: flex; gap: 10px; }
-        #editor-fields { flex: 1; overflow-y: auto; padding: 15px; -webkit-overflow-scrolling: touch; background: rgba(0,0,0,0.1); }
+        /* ÜST MENÜ: Seçici ve Kaydet */
+        .sidebar-top-nav { padding: 10px; border-bottom: 2px solid var(--border); background: #111827; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
+        .nav-row { display: flex; gap: 8px; }
 
-        /* Sürükle-Bırak metinleri için stil */
+        #file-selector { flex: 1; padding: 10px; border-radius: 6px; background: #000; color: #fff; border: 1px solid var(--border); font-size: 14px; cursor: pointer; }
+
+        /* Sürükle Bırak Stilleri */
         .duzenlenebilir { cursor: move; user-select: none; }
         .duzenlenebilir:active { opacity: 0.7; stroke: var(--accent); stroke-width: 1px; }
 
-        /* Editör Kutuları */
+        /* Alanlar */
+        #editor-fields { flex: 1; overflow-y: auto; padding: 15px; background: rgba(0,0,0,0.1); }
         .field-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 15px; }
         .text-input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: #000; color: #fff; font-size: 14px; margin-bottom: 8px; }
-        .control-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 5px; }
-
-        .color-input { appearance: none; -webkit-appearance: none; width: 35px; height: 35px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: none; padding: 0; }
-        .color-input::-webkit-color-swatch { border: none; border-radius: 3px; }
 
         /* Butonlar */
         #save-btn { flex: 2; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .exit-btn { flex: 1; padding: 12px; background: #334155; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .exit-btn { flex: 1; padding: 12px; background: #334155; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
 
-        #main-view { flex: 1; background: #020617; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 20px; position: relative; }
+        #main-view { flex: 1; background: #020617; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 20px; }
         #svg-wrapper { background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5); line-height: 0; position: relative; }
         svg { max-width: 100%; height: auto; display: block; overflow: visible; }
-
         #status-info { position: fixed; top: 0; left: 0; width: 100%; background: #059669; color: white; text-align: center; padding: 5px; font-size: 12px; z-index: 11000; display: none; }
     </style>
 </head>
 <body>
 
-<div id="status-info">İŞLEM YAPILIYOR...</div>
+<div id="status-info">YÜKLENİYOR...</div>
 
 <div id="login-screen">
     <div class="login-card">
         <h1>Giriş</h1>
         <input type="password" id="passInput" placeholder="Şifrenizi Yazın">
-        <button onclick="login()">EDİTÖRÜ AÇ</button>
+        <button onclick="login()">SİSTEMİ AÇ</button>
     </div>
 </div>
 
 <div id="app-container">
     <div id="main-view">
-        <div id="svg-wrapper">
-            <div id="canvas-inner"></div>
-        </div>
+        <div id="svg-wrapper"><div id="canvas-inner"></div></div>
     </div>
     
     <div id="sidebar">
         <div class="sidebar-top-nav">
-            <button id="save-btn" onclick="saveData()">KAYDET</button>
-            <button class="exit-btn" onclick="location.reload()">ÇIKIŞ</button>
+            <select id="file-selector" onchange="loadSlide()">
+                <option value="slayt.svg">Ana Slayt</option>
+                <option value="info.svg">Kampanya Slaytı</option>
+                <option value="duyuru.svg">Duyuru Panosu</option>
+                </select>
+            <div class="nav-row">
+                <button id="save-btn" onclick="saveData()">KAYDET</button>
+                <button class="exit-btn" onclick="location.reload()">ÇIKIŞ</button>
+            </div>
         </div>
-        <div id="editor-fields">Yükleniyor...</div>
+        <div id="editor-fields">Lütfen bir slayt seçin...</div>
     </div>
 </div>
 
 <script>
-    const WORKER_URL = "https://githubtoken.tafbilgiislem.workers.dev/"; // URL'nizi buraya yazın
+    const WORKER_URL = "https://githubtoken.tafbilgiislem.workers.dev/"; 
     let SHA_KEY = "";
     let SESSION_PASS = "";
     let selectedElement = null;
@@ -97,31 +87,49 @@
     async function login() {
         const pass = document.getElementById('passInput').value.trim();
         if(!pass) return;
+        SESSION_PASS = pass;
+        await loadSlide(); // İlk slaytı yükle
+    }
+
+    async function loadSlide() {
+        const fileName = document.getElementById('file-selector').value;
+        const status = document.getElementById('status-info');
+        status.innerText = fileName + " YÜKLENİYOR...";
+        status.style.display = "block";
+
         try {
-            const res = await fetch(WORKER_URL, { headers: { "X-Auth-Key": pass } });
-            if (res.status === 401) { alert("Şifre Hatalı!"); return; }
+            const res = await fetch(WORKER_URL, { 
+                headers: { 
+                    "X-Auth-Key": SESSION_PASS,
+                    "X-File-Name": fileName 
+                } 
+            });
+
+            if (res.status === 401) { alert("Şifre Hatalı!"); status.style.display = "none"; return; }
+            if (!res.ok) throw new Error("Dosya bulunamadı!");
+
             const data = await res.json();
-            SESSION_PASS = pass;
             SHA_KEY = data.sha;
+            
             document.getElementById('login-screen').style.display = "none";
             document.getElementById('app-container').style.display = "flex";
             document.getElementById('canvas-inner').innerHTML = decodeURIComponent(escape(atob(data.content)));
             
             initDragAndDrop();
             renderFields();
-        } catch (e) { alert("Bağlantı Hatası!"); }
+            status.style.display = "none";
+        } catch (e) {
+            alert("Hata: " + e.message);
+            status.style.display = "none";
+        }
     }
 
-    // --- SÜRÜKLE BIRAK SİSTEMİ ---
+    // Sürükle Bırak ve Render fonksiyonları önceki ile aynı kalıyor...
     function initDragAndDrop() {
         const svg = document.querySelector('#canvas-inner svg');
-        
         svg.addEventListener('mousedown', startDrag);
         svg.addEventListener('mousemove', drag);
         svg.addEventListener('mouseup', endDrag);
-        svg.addEventListener('mouseleave', endDrag);
-
-        // Tablet için Touch destekleri
         svg.addEventListener('touchstart', startDrag, {passive: false});
         svg.addEventListener('touchmove', drag, {passive: false});
         svg.addEventListener('touchend', endDrag);
@@ -130,17 +138,11 @@
             const target = evt.target;
             if (target.classList.contains('duzenlenebilir') || target.parentElement.classList.contains('duzenlenebilir')) {
                 selectedElement = target.classList.contains('duzenlenebilir') ? target : target.parentElement;
-                
                 const coord = getMousePosition(evt);
-                // Mevcut koordinatları al
-                const currentX = parseFloat(selectedElement.getAttribute("x")) || 0;
-                const currentY = parseFloat(selectedElement.getAttribute("y")) || 0;
-                
-                offset.x = coord.x - currentX;
-                offset.y = coord.y - currentY;
+                offset.x = coord.x - (parseFloat(selectedElement.getAttribute("x")) || 0);
+                offset.y = coord.y - (parseFloat(selectedElement.getAttribute("y")) || 0);
             }
         }
-
         function drag(evt) {
             if (selectedElement) {
                 evt.preventDefault();
@@ -149,18 +151,11 @@
                 selectedElement.setAttribute("y", coord.y - offset.y);
             }
         }
-
-        function endDrag() {
-            selectedElement = null;
-        }
-
+        function endDrag() { selectedElement = null; }
         function getMousePosition(evt) {
             const CTM = svg.getScreenCTM();
-            if (evt.touches) { evt = evt.touches[0]; }
-            return {
-                x: (evt.clientX - CTM.e) / CTM.a,
-                y: (evt.clientY - CTM.f) / CTM.d
-            };
+            if (evt.touches) evt = evt.touches[0];
+            return { x: (evt.clientX - CTM.e) / CTM.a, y: (evt.clientY - CTM.f) / CTM.d };
         }
     }
 
@@ -168,82 +163,52 @@
         const container = document.getElementById('editor-fields');
         container.innerHTML = "";
         const targets = document.querySelectorAll('.duzenlenebilir');
-
         targets.forEach((el, i) => {
             const box = document.createElement('div');
             box.className = 'field-box';
-            
-            const label = document.createElement('div');
-            label.style.cssText = "font-size:10px; color:#94a3b8; font-weight:bold; margin-bottom:5px; text-transform:uppercase;";
-            label.innerText = el.id ? el.id.replace(/_/g, ' ') : "ALAN " + (i + 1);
-            box.appendChild(label);
-
-            const inp = document.createElement('input');
-            inp.className = "text-input";
-            inp.value = el.textContent.trim();
-            inp.oninput = (e) => { el.textContent = e.target.value; };
-            box.appendChild(inp);
-
-            const row = document.createElement('div');
-            row.className = "control-row";
-
-            // Renk
-            const cp = document.createElement('input');
-            cp.type = "color";
-            cp.className = "color-input";
-            const curCol = el.getAttribute('fill') || window.getComputedStyle(el).fill || "#000000";
-            cp.value = rgbToHex(curCol);
-            cp.oninput = (e) => { el.setAttribute('fill', e.target.value); el.style.fill = e.target.value; };
-            row.appendChild(cp);
-
-            // Boyut Slider
-            let curSize = parseInt(window.getComputedStyle(el).fontSize) || 20;
-            const sRow = document.createElement('div');
-            sRow.style.flex = "1";
-            sRow.innerHTML = `<input type="range" min="8" max="250" value="${curSize}" oninput="updateSize(this, ${i})" style="width:100%">`;
-            row.appendChild(sRow);
-
-            box.appendChild(row);
+            box.innerHTML = `
+                <div style="font-size:10px; color:#94a3b8; font-weight:bold; margin-bottom:5px;">${(el.id || 'ALAN '+(i+1)).toUpperCase()}</div>
+                <input type="text" class="text-input" value="${el.textContent.trim()}" oninput="document.querySelectorAll('.duzenlenebilir')[${i}].textContent = this.value">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="color" class="color-input" value="${rgbToHex(window.getComputedStyle(el).fill)}" oninput="document.querySelectorAll('.duzenlenebilir')[${i}].setAttribute('fill', this.value)">
+                    <input type="range" min="8" max="250" value="${parseInt(window.getComputedStyle(el).fontSize)}" oninput="document.querySelectorAll('.duzenlenebilir')[${i}].style.fontSize = this.value+'px'" style="flex:1">
+                </div>
+            `;
             container.appendChild(box);
         });
     }
 
-    window.updateSize = (slider, idx) => {
-        const el = document.querySelectorAll('.duzenlenebilir')[idx];
-        el.style.fontSize = slider.value + "px";
-    };
-
     function rgbToHex(rgb) {
         if (rgb.startsWith('#')) return rgb;
-        const parts = rgb.match(/\d+/g);
-        if (!parts) return "#000000";
-        return "#" + parts.map(x => parseInt(x).toString(16).padStart(2, '0')).join('').substring(0, 6);
+        const p = rgb.match(/\d+/g);
+        return "#" + p.map(x => parseInt(x).toString(16).padStart(2, '0')).join('').substring(0, 6);
     }
 
     async function saveData() {
-        const btn = document.getElementById('save-btn');
-        const st = document.getElementById('status-info');
-        btn.disabled = true;
-        st.innerText = "KAYDEDİLİYOR...";
-        st.style.display = "block";
+        const fileName = document.getElementById('file-selector').value;
+        const status = document.getElementById('status-info');
+        status.innerText = "KAYDEDİLİYOR...";
+        status.style.display = "block";
 
         try {
-            const svg = document.querySelector('#canvas-inner svg');
-            const svgText = new XMLSerializer().serializeToString(svg);
+            const svgText = new XMLSerializer().serializeToString(document.querySelector('#canvas-inner svg'));
             const encoded = btoa(unescape(encodeURIComponent(svgText)));
             const res = await fetch(WORKER_URL, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json", "X-Auth-Key": SESSION_PASS },
-                body: JSON.stringify({ message: "Position Update", content: encoded, sha: SHA_KEY })
+                headers: { 
+                    "Content-Type": "application/json", 
+                    "X-Auth-Key": SESSION_PASS,
+                    "X-File-Name": fileName
+                },
+                body: JSON.stringify({ message: fileName + " güncellendi", content: encoded, sha: SHA_KEY })
             });
             if (res.ok) {
                 const data = await res.json();
                 SHA_KEY = data.content.sha;
-                st.innerText = "BAŞARIYLA KAYDEDİLDİ!";
-                setTimeout(() => { st.style.display = "none"; }, 3000);
-            } else { alert("Kayıt Hatası!"); st.style.display = "none"; }
-        } catch (e) { alert("Sistem Hatası!"); st.style.display = "none"; }
-        btn.disabled = false;
+                status.innerText = "BAŞARIYLA KAYDEDİLDİ!";
+                setTimeout(() => status.style.display = "none", 2000);
+            } else alert("Kayıt Hatası!");
+        } catch (e) { alert("Sistem Hatası!"); }
     }
 </script>
 </body>
