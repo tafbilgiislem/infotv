@@ -5,43 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SVG Pro Editor | Çoklu Slayt</title>
     <style>
-        :root { --accent: #10b981; --bg: #0f172a; --panel: #1e293b; --border: #334155; }
+        :root { --accent: #10b981; --bg: #0f172a; --panel: #1e293b; --border: #334155; --error: #ef4444; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-
-        /* Giriş ve Üst Navigasyon */
-        #login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-        .login-card { background: var(--panel); padding: 30px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid var(--border); }
         
+        body { 
+            margin: 0; font-family: 'Inter', -apple-system, sans-serif; 
+            background: var(--bg); color: white; height: 100vh; 
+            display: flex; flex-direction: column; overflow: hidden; 
+        }
+
+        /* --- MODERN GİRİŞ EKRANI (GERİ GELDİ) --- */
+        #login-screen { 
+            position: fixed; inset: 0; background: var(--bg); 
+            display: flex; align-items: center; justify-content: center; z-index: 10000; 
+        }
+        .login-card { 
+            background: var(--panel); padding: 40px; border-radius: 16px; 
+            width: 90%; max-width: 380px; text-align: center; 
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        .login-card h1 { margin: 0 0 10px; font-size: 26px; color: #f8fafc; }
+        .login-card p { color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
+        
+        .login-card input { 
+            width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 10px; 
+            border: 1px solid var(--border); background: #0f172a; color: white; 
+            font-size: 16px; text-align: center; transition: 0.3s;
+        }
+        .login-card input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+        
+        .login-card button { 
+            width: 100%; padding: 14px; background: var(--accent); border: none; 
+            color: white; font-weight: bold; border-radius: 10px; cursor: pointer; 
+            font-size: 16px; transition: 0.2s;
+        }
+        .login-card button:hover { background: #059669; }
+        .login-card button:active { transform: scale(0.98); }
+
+        /* --- ANA ARAYÜZ --- */
         #app-container { display: none; height: 100vh; width: 100vw; flex-direction: row; }
         @media (max-width: 1023px) { #app-container { flex-direction: column; } }
 
-        #sidebar { display: flex; flex-direction: column; background: var(--panel); width: 350px; border-right: 1px solid var(--border); flex-shrink: 0; height: 100%; }
-        @media (max-width: 1023px) { #sidebar { width: 100%; height: 50vh; border-right: none; border-top: 1px solid var(--border); order: 2; } #main-view { height: 50vh; order: 1; } }
+        #sidebar { 
+            display: flex; flex-direction: column; background: var(--panel); 
+            width: 350px; border-right: 1px solid var(--border); flex-shrink: 0; height: 100%;
+        }
+        @media (max-width: 1023px) { 
+            #sidebar { width: 100%; height: 50vh; border-right: none; border-top: 1px solid var(--border); order: 2; }
+            #main-view { height: 50vh; order: 1; }
+        }
 
-        /* ÜST MENÜ: Seçici ve Kaydet */
-        .sidebar-top-nav { padding: 10px; border-bottom: 2px solid var(--border); background: #111827; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
-        .nav-row { display: flex; gap: 8px; }
+        /* Üst Menü Düzeni */
+        .sidebar-top-nav { padding: 12px; border-bottom: 2px solid var(--border); background: #111827; flex-shrink: 0; }
+        .nav-row { display: flex; gap: 8px; margin-top: 8px; }
 
-        #file-selector { flex: 1; padding: 10px; border-radius: 6px; background: #000; color: #fff; border: 1px solid var(--border); font-size: 14px; cursor: pointer; }
+        #file-selector { 
+            width: 100%; padding: 10px; border-radius: 8px; background: #000; 
+            color: #fff; border: 1px solid var(--border); font-size: 14px; cursor: pointer;
+        }
 
-        /* Sürükle Bırak Stilleri */
-        .duzenlenebilir { cursor: move; user-select: none; }
-        .duzenlenebilir:active { opacity: 0.7; stroke: var(--accent); stroke-width: 1px; }
-
-        /* Alanlar */
+        /* Editör Alanları */
         #editor-fields { flex: 1; overflow-y: auto; padding: 15px; background: rgba(0,0,0,0.1); }
-        .field-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 15px; }
-        .text-input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: #000; color: #fff; font-size: 14px; margin-bottom: 8px; }
+        .field-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .text-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #000; color: #fff; font-size: 15px; margin-bottom: 10px; }
+
+        /* Sürükle Bırak */
+        .duzenlenebilir { cursor: move; user-select: none; }
+        .duzenlenebilir:active { opacity: 0.6; stroke: var(--accent); stroke-width: 1.5px; }
 
         /* Butonlar */
-        #save-btn { flex: 2; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .exit-btn { flex: 1; padding: 12px; background: #334155; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        #save-btn { flex: 2; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .exit-btn { flex: 1; padding: 12px; background: #334155; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; }
 
+        /* Önizleme */
         #main-view { flex: 1; background: #020617; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 20px; }
-        #svg-wrapper { background: white; box-shadow: 0 0 30px rgba(0,0,0,0.5); line-height: 0; position: relative; }
+        #svg-wrapper { background: white; box-shadow: 0 0 40px rgba(0,0,0,0.6); line-height: 0; position: relative; }
         svg { max-width: 100%; height: auto; display: block; overflow: visible; }
-        #status-info { position: fixed; top: 0; left: 0; width: 100%; background: #059669; color: white; text-align: center; padding: 5px; font-size: 12px; z-index: 11000; display: none; }
+        
+        #status-info { position: fixed; top: 0; left: 0; width: 100%; background: var(--accent); color: white; text-align: center; padding: 6px; font-size: 13px; font-weight: bold; z-index: 11000; display: none; }
     </style>
 </head>
 <body>
@@ -50,15 +92,19 @@
 
 <div id="login-screen">
     <div class="login-card">
-        <h1>Giriş</h1>
-        <input type="password" id="passInput" placeholder="Şifrenizi Yazın">
-        <button onclick="login()">SİSTEMİ AÇ</button>
+        <h1>Hoş Geldiniz</h1>
+        <p>Devam etmek için sistem şifresini girin</p>
+        <input type="password" id="passInput" placeholder="Şifre" onkeypress="if(event.key==='Enter') login()">
+        <button id="login-btn" onclick="login()">SİSTEME GİRİŞ YAP</button>
+        <div id="login-err" style="color: var(--error); font-size: 13px; margin-top: 15px; display: none; font-weight: bold;">⚠️ Şifre Hatalı!</div>
     </div>
 </div>
 
 <div id="app-container">
     <div id="main-view">
-        <div id="svg-wrapper"><div id="canvas-inner"></div></div>
+        <div id="svg-wrapper">
+            <div id="canvas-inner"></div>
+        </div>
     </div>
     
     <div id="sidebar">
@@ -73,12 +119,14 @@
                 <button class="exit-btn" onclick="location.reload()">ÇIKIŞ</button>
             </div>
         </div>
-        <div id="editor-fields">Lütfen bir slayt seçin...</div>
+        <div id="editor-fields">Yükleniyor...</div>
     </div>
 </div>
 
 <script>
+    // URL'nizi buraya yazmayı unutmayın
     const WORKER_URL = "https://githubtoken.tafbilgiislem.workers.dev/"; 
+    
     let SHA_KEY = "";
     let SESSION_PASS = "";
     let selectedElement = null;
@@ -86,29 +134,30 @@
 
     async function login() {
         const pass = document.getElementById('passInput').value.trim();
+        const btn = document.getElementById('login-btn');
+        const err = document.getElementById('login-err');
+        
         if(!pass) return;
-        SESSION_PASS = pass;
-        await loadSlide(); // İlk slaytı yükle
-    }
-
-    async function loadSlide() {
-        const fileName = document.getElementById('file-selector').value;
-        const status = document.getElementById('status-info');
-        status.innerText = fileName + " YÜKLENİYOR...";
-        status.style.display = "block";
+        
+        btn.innerText = "DOĞRULANIYOR...";
+        btn.disabled = true;
+        err.style.display = "none";
 
         try {
+            const fileName = document.getElementById('file-selector').value;
             const res = await fetch(WORKER_URL, { 
-                headers: { 
-                    "X-Auth-Key": SESSION_PASS,
-                    "X-File-Name": fileName 
-                } 
+                headers: { "X-Auth-Key": pass, "X-File-Name": fileName } 
             });
 
-            if (res.status === 401) { alert("Şifre Hatalı!"); status.style.display = "none"; return; }
-            if (!res.ok) throw new Error("Dosya bulunamadı!");
+            if (res.status === 401) {
+                err.style.display = "block";
+                btn.innerText = "SİSTEME GİRİŞ YAP";
+                btn.disabled = false;
+                return;
+            }
 
             const data = await res.json();
+            SESSION_PASS = pass;
             SHA_KEY = data.sha;
             
             document.getElementById('login-screen').style.display = "none";
@@ -117,14 +166,35 @@
             
             initDragAndDrop();
             renderFields();
+        } catch (e) {
+            alert("Bağlantı Hatası: " + e.message);
+            btn.innerText = "SİSTEME GİRİŞ YAP";
+            btn.disabled = false;
+        }
+    }
+
+    async function loadSlide() {
+        const fileName = document.getElementById('file-selector').value;
+        const status = document.getElementById('status-info');
+        status.innerText = fileName.toUpperCase() + " YÜKLENİYOR...";
+        status.style.display = "block";
+
+        try {
+            const res = await fetch(WORKER_URL, { 
+                headers: { "X-Auth-Key": SESSION_PASS, "X-File-Name": fileName } 
+            });
+            const data = await res.json();
+            SHA_KEY = data.sha;
+            document.getElementById('canvas-inner').innerHTML = decodeURIComponent(escape(atob(data.content)));
+            initDragAndDrop();
+            renderFields();
             status.style.display = "none";
         } catch (e) {
-            alert("Hata: " + e.message);
+            alert("Yükleme Hatası!");
             status.style.display = "none";
         }
     }
 
-    // Sürükle Bırak ve Render fonksiyonları önceki ile aynı kalıyor...
     function initDragAndDrop() {
         const svg = document.querySelector('#canvas-inner svg');
         svg.addEventListener('mousedown', startDrag);
@@ -167,49 +237,5 @@
             const box = document.createElement('div');
             box.className = 'field-box';
             box.innerHTML = `
-                <div style="font-size:10px; color:#94a3b8; font-weight:bold; margin-bottom:5px;">${(el.id || 'ALAN '+(i+1)).toUpperCase()}</div>
-                <input type="text" class="text-input" value="${el.textContent.trim()}" oninput="document.querySelectorAll('.duzenlenebilir')[${i}].textContent = this.value">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <input type="color" class="color-input" value="${rgbToHex(window.getComputedStyle(el).fill)}" oninput="document.querySelectorAll('.duzenlenebilir')[${i}].setAttribute('fill', this.value)">
-                    <input type="range" min="8" max="250" value="${parseInt(window.getComputedStyle(el).fontSize)}" oninput="document.querySelectorAll('.duzenlenebilir')[${i}].style.fontSize = this.value+'px'" style="flex:1">
-                </div>
-            `;
-            container.appendChild(box);
-        });
-    }
-
-    function rgbToHex(rgb) {
-        if (rgb.startsWith('#')) return rgb;
-        const p = rgb.match(/\d+/g);
-        return "#" + p.map(x => parseInt(x).toString(16).padStart(2, '0')).join('').substring(0, 6);
-    }
-
-    async function saveData() {
-        const fileName = document.getElementById('file-selector').value;
-        const status = document.getElementById('status-info');
-        status.innerText = "KAYDEDİLİYOR...";
-        status.style.display = "block";
-
-        try {
-            const svgText = new XMLSerializer().serializeToString(document.querySelector('#canvas-inner svg'));
-            const encoded = btoa(unescape(encodeURIComponent(svgText)));
-            const res = await fetch(WORKER_URL, {
-                method: "PUT",
-                headers: { 
-                    "Content-Type": "application/json", 
-                    "X-Auth-Key": SESSION_PASS,
-                    "X-File-Name": fileName
-                },
-                body: JSON.stringify({ message: fileName + " güncellendi", content: encoded, sha: SHA_KEY })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                SHA_KEY = data.content.sha;
-                status.innerText = "BAŞARIYLA KAYDEDİLDİ!";
-                setTimeout(() => status.style.display = "none", 2000);
-            } else alert("Kayıt Hatası!");
-        } catch (e) { alert("Sistem Hatası!"); }
-    }
-</script>
-</body>
-</html>
+                <div style="font-size:10px; color:#94a3b8; font-weight:bold; margin-bottom:8px;">${(el.id || 'ALAN '+(i+1)).toUpperCase()}</div>
+                <input type="text" class="text-input" value="${el.textContent.trim()}" oninput="
