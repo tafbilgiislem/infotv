@@ -238,4 +238,44 @@
             box.className = 'field-box';
             box.innerHTML = `
                 <div style="font-size:10px; color:#94a3b8; font-weight:bold; margin-bottom:8px;">${(el.id || 'ALAN '+(i+1)).toUpperCase()}</div>
-                <input type="text" class="text-input" value="${el.textContent.trim()}" oninput="
+                <input type="text" class="text-input" value="${el.textContent.trim()}" oninput="document.querySelectorAll('.duzenlenebilir')[${i}].textContent = this.value">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <input type="color" class="color-input" style="appearance:none; -webkit-appearance:none; width:40px; height:40px; border:none; border-radius:6px; cursor:pointer;" value="${rgbToHex(window.getComputedStyle(el).fill)}" oninput="document.querySelectorAll('.duzenlenebilir')[${i}].setAttribute('fill', this.value)">
+                    <input type="range" min="8" max="250" value="${parseInt(window.getComputedStyle(el).fontSize)}" oninput="document.querySelectorAll('.duzenlenebilir')[${i}].style.fontSize = this.value+'px'" style="flex:1; accent-color:var(--accent);">
+                </div>
+            `;
+            container.appendChild(box);
+        });
+    }
+
+    function rgbToHex(rgb) {
+        if (rgb.startsWith('#')) return rgb;
+        const p = rgb.match(/\d+/g);
+        return "#" + p.map(x => parseInt(x).toString(16).padStart(2, '0')).join('').substring(0, 6);
+    }
+
+    async function saveData() {
+        const fileName = document.getElementById('file-selector').value;
+        const status = document.getElementById('status-info');
+        status.innerText = "KAYDEDİLİYOR...";
+        status.style.display = "block";
+
+        try {
+            const svgText = new XMLSerializer().serializeToString(document.querySelector('#canvas-inner svg'));
+            const encoded = btoa(unescape(encodeURIComponent(svgText)));
+            const res = await fetch(WORKER_URL, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", "X-Auth-Key": SESSION_PASS, "X-File-Name": fileName },
+                body: JSON.stringify({ message: fileName + " güncellendi", content: encoded, sha: SHA_KEY })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                SHA_KEY = data.content.sha;
+                status.innerText = "BAŞARIYLA KAYDEDİLDİ!";
+                setTimeout(() => status.style.display = "none", 2000);
+            } else alert("Kayıt Hatası!");
+        } catch (e) { alert("Sistem Hatası!"); }
+    }
+</script>
+</body>
+</html>
